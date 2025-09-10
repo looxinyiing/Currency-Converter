@@ -1,4 +1,3 @@
-
 from datetime import date, datetime
 from typing import Any, Dict, Iterable, Optional, Union
 import requests
@@ -9,13 +8,11 @@ BASE_URL = "https://api.frankfurter.app"
 
 def _build_session() -> requests.Session:
     s = requests.Session()
-    retry = Retry(
-        total=3, read=3, connect=3,
-        backoff_factor=0.3,
-        status_forcelist=(429, 500, 502, 503, 504),
-        allowed_methods=frozenset(["GET"]),
-        raise_on_status=False,
-    )
+    retry = Retry(total=3, read=3, connect=3,
+                  backoff_factor=0.3,
+                  status_forcelist=(429, 500, 502, 503, 504),
+                  allowed_methods=frozenset(["GET"]),
+                  raise_on_status=False)
     s.mount("https://", HTTPAdapter(max_retries=retry))
     s.headers.update({"User-Agent": "fx-converter/1.0"})
     return s
@@ -45,11 +42,9 @@ def _get(path: str, params: Optional[Dict[str, Any]] = None, timeout: float = 10
     return r.json()
 
 def currencies() -> Dict[str, str]:
-    """Fetch available currencies: code -> name."""
     return _get("/currencies")
 
 def latest(base: str, symbols: Union[str, Iterable[str]], amount: Optional[float] = None) -> Dict[str, Any]:
-    """Fetch latest rates from `base` to `symbols` (one or more)."""
     if not base:
         raise ValueError("base is required")
     params: Dict[str, Any] = {"from": base, "to": _comma_list(symbols)}
@@ -58,7 +53,6 @@ def latest(base: str, symbols: Union[str, Iterable[str]], amount: Optional[float
     return _get("/latest", params=params)
 
 def historical(on_date: DateLike, base: str, symbols: Union[str, Iterable[str]], amount: Optional[float] = None) -> Dict[str, Any]:
-    """Fetch historical rates for a date (YYYY-MM-DD) from `base` to `symbols`."""
     if not base:
         raise ValueError("base is required")
     day = _iso_date(on_date)
